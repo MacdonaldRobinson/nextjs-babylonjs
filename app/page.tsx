@@ -1,65 +1,100 @@
-import Image from "next/image";
+"use client";
+
+import React from "react";
+import { Engine, Scene } from "react-babylonjs";
+import * as BABYLON from "@babylonjs/core";
+import { Vector3 } from "@babylonjs/core/Maths/math.vector";
 
 export default function Home() {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    return (
+        <div style={{ width: "100%", height: "100vh" }}>
+            <Engine antialias adaptToDeviceRatio canvasId="babylon-canvas">
+                <Scene
+                    onSceneMount={({ scene }) => {
+                        if (!scene) return;
+
+                        // ✅ HDR environment
+                        const hdrTexture = new BABYLON.HDRCubeTexture(
+                            "https://playground.babylonjs.com/textures/room.hdr",
+                            scene,
+                            512,
+                            false,
+                            true,
+                            false,
+                            true
+                        );
+                        scene.environmentTexture = hdrTexture;
+
+                        // ✅ Skybox so HDR is visible
+                        scene.createDefaultSkybox(hdrTexture, true, 1000);
+
+                        // ✅ Lights
+                        const hemi = new BABYLON.HemisphericLight(
+                            "hemi",
+                            new Vector3(0, 1, 0),
+                            scene
+                        );
+                        hemi.intensity = 1;
+
+                        const dir = new BABYLON.DirectionalLight(
+                            "dir",
+                            new Vector3(-1, -2, -1),
+                            scene
+                        );
+                        dir.intensity = 1;
+
+                        // ✅ PBR material with texture and HDR reflections
+                        const mat = new BABYLON.PBRMaterial("pbrMat", scene);
+                        mat.metallic = 1;
+                        mat.roughness = 0;
+                        mat.backFaceCulling = false;
+                        mat.albedoTexture = new BABYLON.Texture(
+                            "https://via.assets.so/game.png?id=1&q=95&w=360&h=360&fit=fill",
+                            scene
+                        );
+                        mat.environmentIntensity = 1; // HDR reflections visible
+
+                        // ✅ Cube mesh
+                        const box = BABYLON.MeshBuilder.CreateSphere(
+                            "box",
+                            {},
+                            scene
+                        );
+                        box.material = mat;
+                        box.position = Vector3.Zero();
+
+                        // ✅ Rotate cube
+                        scene.onBeforeRenderObservable.add(() => {
+                            //box.rotation.y += 0.01;
+                        });
+
+                        // ✅ Camera
+                        const camera = new BABYLON.ArcRotateCamera(
+                            "camera",
+                            Math.PI / 2,
+                            Math.PI / 2,
+                            3,
+                            Vector3.Zero(),
+                            scene
+                        );
+                        camera.attachControl(
+                            scene.getEngine().getRenderingCanvas(),
+                            true
+                        );
+                        camera.lowerBetaLimit = 0;
+                        camera.upperBetaLimit = Math.PI;
+                        camera.lowerRadiusLimit = 1;
+                        camera.upperRadiusLimit = camera.radius + 5;
+                        camera.wheelPrecision = 50;
+                        camera.panningSensibility = 0;
+                        camera.minZ = 0.1; // smaller = can get closer without disappearing
+                        camera.maxZ = 1000; // optional, far clipping
+                    }}
+                >
+                    {/* Empty children fixes TypeScript */}
+                    <> </>
+                </Scene>
+            </Engine>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
-  );
+    );
 }
