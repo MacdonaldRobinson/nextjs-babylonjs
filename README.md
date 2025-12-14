@@ -1,4 +1,4 @@
-### React Babylong JS example
+### React Babylon JS example
 
 Demo: https://macdonaldrobinson.github.io/nextjs-babylonjs/
 
