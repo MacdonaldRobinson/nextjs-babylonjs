@@ -25,7 +25,9 @@ export default function Home() {
                         gammaSpace={false}
                         coordinatesMode={BABYLON.Texture.CUBIC_MODE}
                         assignTo="environmentTexture"
-                        onCreated={(tex) => setHdrReflection(tex)}
+                        onCreated={(tex) => {
+                            setHdrReflection(tex);
+                        }}
                     />
 
                     {/* HDR for skybox */}
@@ -35,7 +37,7 @@ export default function Home() {
                         gammaSpace={false}
                         coordinatesMode={BABYLON.Texture.SKYBOX_MODE}
                         onCreated={(tex) => {
-                            tex.level = 2;
+                            tex.level = 5;
                             setHdrSkybox(tex);
                         }}
                     />
@@ -81,15 +83,16 @@ export default function Home() {
                                 diameter={1}
                                 segments={32}
                                 position={Vector3.Zero()}
+                                rotation={Vector3.FromArray([0, 0, 0])}
                             >
                                 <pbrMaterial
                                     name="pbrMat"
                                     metallic={1}
                                     roughness={0}
-                                    environmentIntensity={1} // HDR reflection brightness
+                                    environmentIntensity={5} // HDR reflection brightness
                                     albedoTexture={
                                         new Texture(
-                                            "https://playground.babylonjs.com/textures/grass.png"
+                                            "https://via.assets.so/game.png?id=5&q=95&w=360&h=360&fit=fill"
                                         )
                                     }
                                     reflectionTexture={hdrReflection}
