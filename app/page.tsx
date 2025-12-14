@@ -2,35 +2,51 @@
 
 import React, { useState } from "react";
 import { Engine, Scene } from "react-babylonjs";
-import { Vector3, Texture, BaseTexture } from "@babylonjs/core";
+import * as BABYLON from "@babylonjs/core";
+import { Vector3, Texture } from "@babylonjs/core";
 
 export default function Home() {
-    const [hdrTexture, setHdrTexture] = useState<BaseTexture | null>(null);
+    const [hdrReflection, setHdrReflection] =
+        useState<BABYLON.HDRCubeTexture | null>(null);
+    const [hdrSkybox, setHdrSkybox] = useState<BABYLON.HDRCubeTexture | null>(
+        null
+    );
+
+    const hdrUrl = "https://playground.babylonjs.com/textures/country.hdr";
 
     return (
         <div style={{ width: "100%", height: "100vh" }}>
             <Engine antialias adaptToDeviceRatio canvasId="babylon-canvas">
                 <Scene>
-                    {/* HDR Texture (fully declarative) */}
+                    {/* HDR for sphere reflections */}
                     <hdrCubeTexture
-                        name="hdrTex"
-                        url="https://playground.babylonjs.com/textures/room.hdr"
+                        url={hdrUrl}
                         size={512}
                         gammaSpace={false}
+                        coordinatesMode={BABYLON.Texture.CUBIC_MODE}
                         assignTo="environmentTexture"
-                        onCreated={(texture) => setHdrTexture(texture)}
+                        onCreated={(tex) => setHdrReflection(tex)}
                     />
 
-                    {/* Render only when HDR is created */}
-                    {hdrTexture && (
+                    {/* HDR for skybox */}
+                    <hdrCubeTexture
+                        url={hdrUrl}
+                        size={512}
+                        gammaSpace={false}
+                        coordinatesMode={BABYLON.Texture.SKYBOX_MODE}
+                        onCreated={(tex) => setHdrSkybox(tex)}
+                    />
+
+                    {/* Render everything only when both HDRs are ready */}
+                    {hdrReflection && hdrSkybox && (
                         <>
-                            {/* Declarative Environment + Skybox */}
+                            {/* Skybox declarative */}
                             <environmentHelper
                                 options={{
                                     createSkybox: true,
-                                    skyboxTexture: hdrTexture,
+                                    skyboxTexture: hdrSkybox,
                                     skyboxSize: 1000,
-                                    createGround: false, // <-- remove purple floor
+                                    createGround: false, // remove purple floor
                                 }}
                             />
 
@@ -41,29 +57,39 @@ export default function Home() {
                                 beta={Math.PI / 3}
                                 radius={4}
                                 target={Vector3.Zero()}
-                                wheelPrecision={50}
-                                panningSensibility={0}
+                                wheelPrecision={100}
+                                wheelDeltaPercentage={0.01} // smooth zoom
+                                lowerRadiusLimit={1} // min zoom
+                                upperRadiusLimit={6} // max zoom
+                                panningSensibility={0} // disable panning
+                                minZ={0.1}
                             />
 
                             {/* Light */}
                             <hemisphericLight
-                                name="light"
+                                name="hemiLight"
                                 direction={Vector3.Up()}
                                 intensity={1}
                             />
 
                             {/* Sphere with reflections */}
-                            <sphere name="sphere" diameter={1} segments={32}>
+                            <sphere
+                                name="sphere"
+                                diameter={1}
+                                segments={32}
+                                position={Vector3.Zero()}
+                            >
                                 <pbrMaterial
-                                    name="mat"
+                                    name="pbrMat"
                                     metallic={1}
                                     roughness={0}
-                                    environmentIntensity={1}
+                                    environmentIntensity={2} // HDR reflection brightness
                                     albedoTexture={
                                         new Texture(
                                             "https://playground.babylonjs.com/textures/grass.png"
                                         )
                                     }
+                                    reflectionTexture={hdrReflection}
                                 />
                             </sphere>
                         </>
