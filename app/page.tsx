@@ -12,7 +12,7 @@ export default function Home() {
         null
     );
 
-    const hdrUrl = "https://playground.babylonjs.com/textures/country.hdr";
+    const hdrUrl = "https://playground.babylonjs.com/textures/room.hdr";
 
     return (
         <div style={{ width: "100%", height: "100vh" }}>
@@ -34,7 +34,10 @@ export default function Home() {
                         size={512}
                         gammaSpace={false}
                         coordinatesMode={BABYLON.Texture.SKYBOX_MODE}
-                        onCreated={(tex) => setHdrSkybox(tex)}
+                        onCreated={(tex) => {
+                            tex.level = 2;
+                            setHdrSkybox(tex);
+                        }}
                     />
 
                     {/* Render everything only when both HDRs are ready */}
@@ -69,7 +72,7 @@ export default function Home() {
                             <hemisphericLight
                                 name="hemiLight"
                                 direction={Vector3.Up()}
-                                intensity={1}
+                                intensity={10}
                             />
 
                             {/* Sphere with reflections */}
@@ -83,7 +86,7 @@ export default function Home() {
                                     name="pbrMat"
                                     metallic={1}
                                     roughness={0}
-                                    environmentIntensity={2} // HDR reflection brightness
+                                    environmentIntensity={1} // HDR reflection brightness
                                     albedoTexture={
                                         new Texture(
                                             "https://playground.babylonjs.com/textures/grass.png"
